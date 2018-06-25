@@ -4,23 +4,41 @@ using UnityEngine;
 
 public class RabbitBehaviour : MonoBehaviour
 {
-    public float speed = 1;
+    public float speed = 4;
     Rigidbody2D myBody = null;
 
     bool isGrounded = false;
     bool JumpActive = false;
     float JumpTime = 0f;
-    public float MaxJumpTime = 2f;
-    public float JumpSpeed = 2f;
+    public float MaxJumpTime = 1f;
+    public float JumpSpeed = 4f;
+
+    float deadAnimationTime = 1f;
+    float deadTime = 0f;
+
+    public bool isDead = false;
+    public bool isBig = false;
+
+    public float bigScale = 0.4f;
+
+    Transform heroParent = null;
 
     void Start()
     {
         this.myBody = this.GetComponent<Rigidbody2D>();
         LevelController.current.setStartPosition(transform.position);
+        this.heroParent = this.transform.parent;
+        this.isDead = false;
+        this.isBig = false;
+
+        GetComponent<Animator>().SetBool("dead", false);
     }
 
     void Update()
     {
+        if (isDead)
+            return;
+
         //[-1, 1]
         float value = Input.GetAxis("Horizontal");
         if (Mathf.Abs(value) > 0)
@@ -62,6 +80,19 @@ public class RabbitBehaviour : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (this.isDead == true)
+        {
+            if (this.deadTime > 0)
+                this.deadTime -= Time.deltaTime;
+            else
+            {
+                this.isDead = false;
+                GetComponent<Animator>().SetBool("dead", false);
+                LevelController.current.onRabbitDeath(this);
+            }
+            return;
+        }
+
         Vector3 from = transform.position + Vector3.up * 0.3f;
         Vector3 to = transform.position + Vector3.down * 0.1f;
         int layer_id = 1 << LayerMask.NameToLayer("Ground");
@@ -69,10 +100,17 @@ public class RabbitBehaviour : MonoBehaviour
         RaycastHit2D hit = Physics2D.Linecast(from, to, layer_id);
         if (hit)
         {
+            //Перевіряємо чи ми опинились на платформі
+            if (hit.transform != null)
+            {
+                //Приліпаємо до платформи
+                SetNewParent(this.transform, hit.transform);
+            }
             isGrounded = true;
         }
         else
         {
+            SetNewParent(this.transform, this.heroParent);
             isGrounded = false;
         }
         //Намалювати лінію (для розробника)
@@ -100,6 +138,47 @@ public class RabbitBehaviour : MonoBehaviour
                 this.JumpActive = false;
                 this.JumpTime = 0;
             }
+        }
+    }
+
+    public void damage()
+    {
+        if (this.isBig)
+            changeSize(false);
+        else
+        {
+            this.isDead = true;
+            this.deadTime = this.deadAnimationTime;
+            GetComponent<Animator>().SetBool("dead", true);
+        }
+    }
+
+    public void changeSize(bool toBig)
+    {
+        if (toBig && !this.isBig)
+        {
+            this.transform.localScale += new Vector3(bigScale, bigScale, 0);
+            this.isBig = true;
+        }
+        if (!toBig && this.isBig)
+        {
+            this.transform.localScale -= new Vector3(bigScale, bigScale, 0);
+            this.isBig = false;
+        }
+    }
+
+    static void SetNewParent(Transform obj, Transform new_parent)
+    {
+        if (obj.transform.parent != new_parent)
+        {
+            //Засікаємо позицію у Глобальних координатах
+            Vector3 pos = obj.transform.position;
+            //Встановлюємо нового батька
+            obj.transform.parent = new_parent;
+            //Після зміни батька координати кролика зміняться
+            //Оскільки вони тепер відносно іншого об’єкта
+            //повертаємо кролика в ті самі глобальні координати
+            obj.transform.position = pos;
         }
     }
 }
