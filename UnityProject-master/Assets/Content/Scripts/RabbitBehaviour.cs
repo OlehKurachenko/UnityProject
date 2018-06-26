@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class RabbitBehaviour : MonoBehaviour
 {
+    public static RabbitBehaviour lastRabbit = null;
+
     public float speed = 4;
     Rigidbody2D myBody = null;
 
@@ -32,6 +34,11 @@ public class RabbitBehaviour : MonoBehaviour
         this.isBig = false;
 
         GetComponent<Animator>().SetBool("dead", false);
+    }
+
+    void Awake()
+    {
+        lastRabbit = this;
     }
 
     void Update()
@@ -82,9 +89,7 @@ public class RabbitBehaviour : MonoBehaviour
     {
         if (this.isDead == true)
         {
-            if (this.deadTime > 0)
-                this.deadTime -= Time.deltaTime;
-            else
+            if ((this.deadTime -= Time.deltaTime) <= 0)
             {
                 this.isDead = false;
                 GetComponent<Animator>().SetBool("dead", false);
@@ -143,6 +148,9 @@ public class RabbitBehaviour : MonoBehaviour
 
     public void damage()
     {
+        if (isDead)
+            return;
+
         if (this.isBig)
             changeSize(false);
         else
