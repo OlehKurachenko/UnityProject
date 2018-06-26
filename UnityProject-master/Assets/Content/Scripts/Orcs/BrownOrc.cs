@@ -5,6 +5,7 @@ using UnityEngine;
 public class BrownOrc : Orc {
 
     public float reloadTime = 5f;
+    public float defenceRadius = 10f;
     private float last_shot = 0;
 
     public GameObject prefabCarrot;
@@ -17,12 +18,9 @@ public class BrownOrc : Orc {
 
         if (Time.time - last_shot > reloadTime)
         {
-            if (Mathf.Abs(RabbitBehaviour.lastRabbit.transform.position.x - this.transform.position.x) < 10.0f)
-            {
-                this.launchCarrot(value);
-                this.GetComponent<Animator>().SetTrigger("hit");
-                last_shot = Time.time;
-            }
+            this.launchCarrot(value);
+            this.GetComponent<Animator>().SetTrigger("hit");
+            last_shot = Time.time;
         }
     }
 
@@ -32,5 +30,12 @@ public class BrownOrc : Orc {
         obj.transform.position = this.transform.position + new Vector3(0, 1, 0);
         Carrot carrot = obj.GetComponent<Carrot>();
         carrot.launch(direction);
+    }
+
+    public override bool rabbitIsHere()
+    {
+        if (Mathf.Abs(RabbitBehaviour.lastRabbit.transform.position.x - this.transform.position.x) < this.defenceRadius)
+            return true;
+        return false;
     }
 }

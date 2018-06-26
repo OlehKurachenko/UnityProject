@@ -74,7 +74,7 @@ public class Orc : MonoBehaviour
         }
     }
 
-    bool rabbitIsHere()
+    public virtual bool rabbitIsHere()
     {
         Vector3 rabbit_pos = RabbitBehaviour.lastRabbit.transform.position;
 
@@ -103,6 +103,9 @@ public class Orc : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        if (mode == Mode.Dying)
+            return;
+
         if (this.isActiveAndEnabled)
         {
             RabbitBehaviour rabbit = collision.gameObject.GetComponent<RabbitBehaviour>();
