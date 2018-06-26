@@ -39,7 +39,7 @@ public class Orc : MonoBehaviour
             GetComponent<Animator>().SetBool("walking", true);
             GetComponent<Animator>().SetBool("running", false);
         }
-        GetComponent<Animator>().SetBool("running", true);
+        GetComponent<Animator>().SetBool("walking", true);
         GetComponent<Animator>().SetBool("running", true);
     }
 
