@@ -106,7 +106,7 @@ public class RabbitBehaviour : MonoBehaviour
         if (hit)
         {
             //Перевіряємо чи ми опинились на платформі
-            if (hit.transform != null)
+            if (hit.transform != null && hit.collider.gameObject.layer == 8)
             {
                 //Приліпаємо до платформи
                 SetNewParent(this.transform, hit.transform);
